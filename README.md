@@ -11,6 +11,8 @@ Additional Requierements:
 JDK
 Chrome driver for Selenium (has to match the version installed on your computer): https://chromedriver.chromium.org/downloads
 
+You will need to create add the Chrome driver in the tools folder, and the Cermine jar if you chose to use this option.
+
 ## Get started
 You can run every module individually, or they can be called specifically. The first time you run the script you need to specify a starting date, and the script will collect the data from that time up until now.
 

@@ -1,3 +1,4 @@
 data/
-tools/
+tools/*
+!tools/.gitkeep
 covid_scraper/__pycache__/
