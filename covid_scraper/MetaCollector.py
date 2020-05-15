@@ -22,10 +22,10 @@ import numpy as np
     
 def find_last_day_collect(platform):
     dates = set()
-    with open(os.join(platform,'content.csv'),'r',encoding='utf-8') as f:
+    with open(os.join("data","meta",platform + '.csv'),'r',encoding='utf-8') as f:
         reader = csv.reader(f)
         for line in reader:
-            dates.append(line[2])
+            dates.append(line[1])
     dates = [datetime.strptime(x,'%Y-%m-%d') for x in dates]
     most_recent = max(dates)
     return most_recent
@@ -244,6 +244,9 @@ def collect_abs(platform):
                         break
                     attempts += 1
                     time.sleep(30)
+                except requests.exceptions.MissingSchema:
+                    attempts = 3
+                    break
             if attempts == 3:
                 continue
             title = html.find("title").text
@@ -265,18 +268,20 @@ def collect_abs(platform):
 def tag_keywords(platform,regex_search):
     meta_data = pd.read_csv(os.path.join("data","meta",platform+".csv"),
                             sep="|",header=None,error_bad_lines=False)
-    abstracts = pd.read_csv(os.path.join("data","meta",platform+"_abs.csv"),sep="|",
-                            error_bad_lines=False)
-    abstracts.columns = ["ID","abstract","link"]
-    
+
     if platform in ['biorxiv','medrxiv']:
         meta_data.columns = ["ID","date","title","authors"]
+        abstracts = pd.read_csv(os.path.join("data","meta",platform+"_abs.csv"),sep="|",
+                            error_bad_lines=False)
+        abstracts.columns = ["ID","abstract","link"]
+        meta_data  = pd.merge(meta_data,abstracts,on="ID",how="left")
     elif platform == 'arxiv':
-        meta_data.columns = ["ID","date","title","authors","abstract","categories"]
-    meta_data  = pd.merge(meta_data,abstracts,on="ID",how="left")
+        meta_data.columns = ["ID","date","sub","title","authors","abstract","categories"]
+    
     meta_data.loc[meta_data['abstract'].isnull(),"abstract"] = ''
     meta_data['text'] = meta_data['title'] + ' ' + meta_data['abstract']
     meta_data['text'] = meta_data['text'].str.lower()
+    meta_data.loc[meta_data['text'].isnull(),"text"] = ''
     
 
     

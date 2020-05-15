@@ -1,4 +1,3 @@
 data/
-tools/cermine-impl-1.13-jar-with-dependencies.jar
-tools/chromedriver.exe
+tools/
 covid_scraper/__pycache__/

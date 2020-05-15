@@ -14,13 +14,16 @@ import time
 from selenium import webdriver # Web browser automation tools
 import pandas as pd
 import subprocess
+from refextract import extract_references_from_file
+import numpy as np
+import json
 
 def get_pdfs(platform,out_path):
     meta_data = pd.read_csv(os.path.join("data","meta",platform+".csv"),sep="|",
                             header=None,
                             error_bad_lines=False)
     if platform == "arxiv":
-        meta_data.columns = ["ID","date","title","authors","abstract","categories"]
+        meta_data.columns = ["ID","date","sub","title","authors","abstract","categories"]
         meta_data['link'] = meta_data["ID"].apply(lambda x: "http://arxiv.org/pdf/{}.pdf".format(x))
     elif platform in ['medrxiv','biorxiv']:
         meta_data.columns = ["ID","date","title","authors"]
@@ -73,14 +76,30 @@ def execute(cmd):
     if return_code:
         raise subprocess.CalledProcessError(return_code, cmd)
         
-def parse_PDF(platform):
-    jar_path = 'cermine-impl-1.13-jar-with-dependencies.jar'
+def parse_pdfs(platform,parser="refextract"):
     pdf_path = os.path.join("..","data","pdf",platform)
-    for path in execute(['java', '-cp', jar_path, 'pl.edu.icm.cermine.ContentExtractor',
-                 '-path', pdf_path,
-                 '-outputs','jats'
-                 ]):
-        print(path, end="")
+    if parser == "cermine":
+        jar_path = 'cermine-impl-1.13-jar-with-dependencies.jar'  
+        for path in execute(['java', '-cp', jar_path, 'pl.edu.icm.cermine.ContentExtractor',
+                     '-path', pdf_path,
+                     '-outputs','jats'
+                     ]):
+            print(path, end="")
+    elif parser == 'refextract':
+        files_dir = np.array(os.listdir(os.path.join("data","pdf",platform)))
+        pdf_files = files_dir[np.char.endswith(files_dir,'.pdf')]
+        parsed_pdfs = np.array(os.listdir(os.path.join("data","json",platform)))
+        parsed_json_IDs = np.array(['.'.join(x.split('.')[:-1]) for x in parsed_pdfs])
+        parsed_IDs = np.array(['.'.join(x.split('.')[:-2]) for x in pdf_files])
+        files_parse = files_dir[~np.isin(parsed_IDs,parsed_json_IDs)]
+        files_parse_ID = parsed_IDs[~np.isin(parsed_IDs,parsed_json_IDs)]
+        nb_files = len(files_parse)
+        with open(os.path.join("data","meta",platform+"_pdfs_parsed.txt"),'a') as f:
+            for i in range(nb_files):
+                print("Extracting refs {}: {}/{}.".format(platform,i+1,nb_files))
+                file = files_parse[i]
+                file_ID = files_parse_ID[i]
+                references = extract_references_from_file(os.path.join("data","pdf",platform,file))
+                with open(os.path.join("data","json",platform,file_ID+".json"),'w') as f:
+                    json.dump(references,f)
 
-    
-   

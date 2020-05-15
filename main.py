@@ -6,22 +6,23 @@ Created on Sun May 10 08:49:19 2020
 """
 
 import os
-from covid_scraper import MetaCollector, pdfCollector
+from covid_scraper import MetaCollector, pdfCollector, refsCollector
 import datetime
 import sys
 
 if __name__ == "__main__":
     
-    args = str(sys.argv)
+    args = sys.argv
     nb_args = len(args)
-    mode = args[0]
-    if nb_args == 2:
-        start_date = datetime.datetime.strptime(args[1],'%Y-%m-%d')
+    mode = args[1]
+    if nb_args == 3:
+        start_date = datetime.datetime.strptime(args[2],'%Y-%m-%d')
     else:
         start_date = None
-    start_date = datetime.datetime.strptime('2020-01-01','%Y-%m-%d')
     platforms = ['medrxiv','biorxiv','arxiv']
-    if mode == "meta":
+    print(mode)
+    if mode == "meta" or mode == "all":
+        
         out_path = os.path.join("data","meta")
         if not os.path.exists(out_path):
             os.makedirs(out_path)
@@ -50,16 +51,25 @@ if __name__ == "__main__":
         for platform in platforms:
             MetaCollector.tag_keywords(platform,regex_search)      
 
-    elif mode == "pdf":
+    if mode == "pdf" or mode == "all":
         for platform in platforms:
             out_path = os.path.join("data","pdf",platform)
             if not os.path.exists(out_path):
                 os.makedirs(out_path)
             pdfCollector.get_pdfs(platform,out_path)
+        
+        '''
+        Parse the pdfs with cermine. 
+        '''
+        for platform in platforms:
+            out_path = os.path.join("data","json",platform)
+            if not os.path.exists(out_path):
+                os.makedirs(out_path)
+            pdfCollector.parse_pdfs(platform)
             
-    elif mode == "refs":
+    if mode == "refs" or mode == "all":
         for platform in platforms:
             out_path = os.path.join("data","refs",platform)
             if not os.path.exists(out_path):
                 os.makedirs(out_path)
-            refsCollector.get_refs(platform,out_path)
+            refsCollector.match_refs(platform,out_path)

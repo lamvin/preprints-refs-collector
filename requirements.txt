@@ -1,0 +1,11 @@
+refextract==1.0.1
+textdistance==4.2.0
+numpy==1.18.1
+cfscrape==2.1.1
+selenium==3.141.0
+pandas==1.0.1
+requests==2.22.0
+strsim==0.0.3
+nltk==3.4.5
+beautifulsoup4==4.9.0
+similarity==0.0.1
