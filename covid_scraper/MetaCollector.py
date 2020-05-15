@@ -22,7 +22,7 @@ import numpy as np
     
 def find_last_day_collect(platform):
     dates = set()
-    with open(os.join("data","meta",platform + '.csv'),'r',encoding='utf-8') as f:
+    with open(os.path.join("data","meta",platform + '.csv'),'r',encoding='utf-8') as f:
         reader = csv.reader(f)
         for line in reader:
             dates.append(line[1])
