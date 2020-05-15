@@ -66,6 +66,7 @@ def get_pdfs(platform,out_path):
             driver.get(link)
             f.write(ID+"\n")
             time.sleep(2)
+    time.sleep(10)
         
 def execute(cmd):
     popen = subprocess.Popen(cmd, cwd= os.path.abspath('tools'), stdout=subprocess.PIPE, universal_newlines=True)
@@ -91,7 +92,7 @@ def parse_pdfs(platform,parser="refextract"):
         parsed_pdfs = np.array(os.listdir(os.path.join("data","json",platform)))
         parsed_json_IDs = np.array(['.'.join(x.split('.')[:-1]) for x in parsed_pdfs])
         parsed_IDs = np.array(['.'.join(x.split('.')[:-2]) for x in pdf_files])
-        files_parse = files_dir[~np.isin(parsed_IDs,parsed_json_IDs)]
+        files_parse = pdf_files[~np.isin(parsed_IDs,parsed_json_IDs)]
         files_parse_ID = parsed_IDs[~np.isin(parsed_IDs,parsed_json_IDs)]
         nb_files = len(files_parse)
         with open(os.path.join("data","meta",platform+"_pdfs_parsed.txt"),'a') as f:
